@@ -35,7 +35,7 @@ void q_free(struct list_head *l)
 
     while (head != l) {
         struct list_head *tmp = head->next;
-        element_t *el = container_of(head, element_t, list);
+        element_t *el = list_entry(head, element_t, list);
         q_release_element(el);
         head = tmp;
     }
