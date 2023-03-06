@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -199,8 +200,69 @@ void q_reverseK(struct list_head *head, int k)
     }
 }
 
+static struct list_head *mergeTwoLists(struct list_head *L1,
+                                       struct list_head *L2)
+{
+    struct list_head *head = L1;
+    struct list_head *rhead = L2;
+    L1 = L1->next;
+    L2 = L2->next;
+    list_del_init(head);
+    list_del_init(rhead);
+
+    struct list_head **node = &head, *tmp = NULL;
+
+    while ((*node) != tmp) {
+        node = strcmp(list_entry(L1, element_t, list)->value,
+                      list_entry(L2, element_t, list)->value) < 0
+                   ? &L1
+                   : &L2;
+        tmp = *node;
+        *node = (*node)->next;
+        list_del_init(tmp);
+        list_add_tail(tmp, head);
+    }
+
+    node = (*node == L1) ? &L2 : &L1;
+    do {
+        tmp = *node;
+        *node = (*node)->next;
+        list_del_init(tmp);
+        list_add_tail(tmp, head);
+    } while ((*node) != tmp);
+
+    return head;
+}
+
+static struct list_head *mergesort_list(struct list_head *head)
+{
+    if (!head || head->next == head || head->next->next == head)
+        return head;
+
+    struct list_head *slow = head->next;
+    for (struct list_head *fast = head->next->next;
+         fast != head && fast->next != head; fast = fast->next->next)
+        slow = slow->next;
+    struct list_head *mid = slow->next;
+
+    slow->next = head;
+    mid->prev = head->prev;
+    head->prev->next = mid;
+    head->prev = slow;
+
+    LIST_HEAD(r_head);
+    list_add(&r_head, mid);
+
+    struct list_head *left = mergesort_list(head),
+                     *right = mergesort_list(&r_head);
+    return mergeTwoLists(left, right);
+}
+
 /* Sort elements of queue in ascending order */
-void q_sort(struct list_head *head) {}
+void q_sort(struct list_head *head)
+{
+    mergesort_list(head);
+}
 
 /* Remove every node which has a node with a strictly greater value anywhere to
  * the right side of it */
