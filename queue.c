@@ -183,18 +183,24 @@ void q_reverseK(struct list_head *head, int k)
 
     struct list_head *curr;
     struct list_head *next;
-    int round = q_size(head) / k;
+    int size = q_size(head), round = size / k, i,
+        pos = k * (size / k - 1) + size % k;
+
+    if (size % k) {
+        for (i = 0, curr = head->prev, next = curr->prev; i < size % k;
+             i++, curr = next, next = next->prev) {
+            list_move(curr, head);
+        }
+    }
 
     while (round-- > 0) {
         // Reverse starting from the last group until the first group
-        int curr_pos = k * (q_size(head) / k - 1);
         curr = head->next;
-        for (int i = 0; i < curr_pos; i++) {
+        for (i = 0; i < pos; i++) {
             curr = curr->next;
         }
-        next = curr->next;
 
-        for (; curr != head; curr = next, next = next->next) {
+        for (next = curr->next; curr != head; curr = next, next = next->next) {
             list_move(curr, head);
         }
     }
