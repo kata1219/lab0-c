@@ -136,7 +136,6 @@ int q_size(struct list_head *head)
 bool q_delete_mid(struct list_head *head)
 {
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
-
     if (!head || head->next == head)
         return false;
 
@@ -156,6 +155,50 @@ bool q_delete_mid(struct list_head *head)
 bool q_delete_dup(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    if (!head)
+        return false;
+
+    struct list_head *never = q_new();
+    struct list_head *once = q_new();
+
+    for (struct list_head *tmp = head->next; tmp != head; tmp = tmp->next) {
+        element_t *el = list_entry(tmp, element_t, list);
+        for (struct list_head *found = never->next;; found = found->next) {
+            if (found == never) {
+                q_insert_head(never, el->value);
+                break;
+            }
+
+            if (strcmp(el->value, list_entry(found, element_t, list)->value))
+                continue;
+
+            for (struct list_head *dup = once->next;; dup = dup->next) {
+                if (dup == once) {
+                    q_insert_head(once, el->value);
+                    break;
+                }
+                if (!strcmp(list_entry(found, element_t, list)->value,
+                            list_entry(dup, element_t, list)->value))
+                    break;
+            }
+            break;
+        }
+    }
+
+    for (struct list_head *tmp = head->next, *front = tmp->next; tmp != head;
+         tmp = front, front = front->next) {
+        element_t *el = list_entry(tmp, element_t, list);
+        for (struct list_head *dup = once->next; dup != once; dup = dup->next) {
+            if (!strcmp(el->value, list_entry(dup, element_t, list)->value)) {
+                list_del(tmp);
+                q_release_element(el);
+                break;
+            }
+        }
+    }
+
+    q_free(never);
+    q_free(once);
     return true;
 }
 
@@ -163,7 +206,6 @@ bool q_delete_dup(struct list_head *head)
 void q_swap(struct list_head *head)
 {
     // https://leetcode.com/problems/swap-nodes-in-pairs/
-
     q_reverseK(head, 2);
 }
 
@@ -180,7 +222,6 @@ void q_reverse(struct list_head *head)
 void q_reverseK(struct list_head *head, int k)
 {
     // https://leetcode.com/problems/reverse-nodes-in-k-group/
-
     struct list_head *curr;
     struct list_head *next;
     int size = q_size(head), round = size / k, i,
