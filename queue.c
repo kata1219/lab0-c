@@ -306,7 +306,10 @@ static struct list_head *mergesort_list(struct list_head *head)
 }
 
 /* Sort elements of queue in ascending/descending order */
-void q_sort(struct list_head *head, bool descend) {}
+void q_sort(struct list_head *head, bool descend)
+{
+    mergesort_list(head);
+}
 
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
